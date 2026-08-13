@@ -168,10 +168,125 @@ Métodos liberados: `GET`, `POST`, `PUT`, `PATCH`, `DELETE` e `OPTIONS`. O heade
 
 ## Modelo de Dados
 
+### Fluxo da Requisição
+
+```mermaid
+flowchart LR
+    Cliente["Postman / Insomnia"]
+    Controller["ProdutoController<br/>/mercado"]
+    Service["ProdutoService"]
+    Repository["ProdutoRepository<br/>Spring Data JPA"]
+    Assembler["ProdutoModelAssembler<br/>links HATEOAS"]
+    Oracle[("Oracle FIAP<br/>TDS_TB_mercado")]
+
+    Cliente -->|"HTTP + JSON"| Controller
+    Controller --> Service
+    Service --> Repository
+    Repository -->|"Hibernate / JDBC"| Oracle
+    Oracle -->|"resultado"| Repository
+    Controller --> Assembler
+    Assembler -->|"JSON + _links"| Cliente
+```
+
 ### Diagrama de Classe
 
-<!-- TODO: substituir pelo diagrama de classe -->
-> ⏳ _Diagrama pendente._
+```mermaid
+classDiagram
+    direction TB
+
+    class ProdutoController {
+        <<RestController>>
+        -ProdutoService produtoService
+        -ProdutoModelAssembler assembler
+        +create(request) ResponseEntity
+        +findAll() ResponseEntity
+        +findById(id) ResponseEntity
+        +update(id, request) ResponseEntity
+        +patch(id, request) ResponseEntity
+        +delete(id) ResponseEntity
+    }
+
+    class ProdutoService {
+        <<Service>>
+        -ProdutoRepository produtoRepository
+        +save(request) Produto
+        +findAll() List~Produto~
+        +findById(id) Optional~Produto~
+        +update(id, request) Optional~Produto~
+        +patch(id, request) Optional~Produto~
+        +deleteById(id) boolean
+    }
+
+    class ProdutoRepository {
+        <<interface>>
+        +save(produto) Produto
+        +findAll() List~Produto~
+        +findById(id) Optional~Produto~
+        +delete(produto) void
+    }
+
+    class Produto {
+        <<Entity>>
+        -Long id
+        -String nome
+        -String tipo
+        -String setor
+        -String tamanho
+        -Double preco
+    }
+
+    class ProdutoRequest {
+        <<record>>
+        +String nome
+        +String tipo
+        +String setor
+        +String tamanho
+        +Double preco
+    }
+
+    class ProdutoPatchRequest {
+        <<record>>
+        +String nome
+        +String tipo
+        +String setor
+        +String tamanho
+        +Double preco
+    }
+
+    class ProdutoResponse {
+        <<record>>
+        +Long id
+        +String nome
+        +String tipo
+        +String setor
+        +String tamanho
+        +Double preco
+    }
+
+    class ProdutoModelAssembler {
+        <<Component>>
+        +toModel(produto) EntityModel
+    }
+
+    class GlobalExceptionHandler {
+        <<RestControllerAdvice>>
+        +handleBodyValidation(ex) ResponseEntity
+        +handleEntityValidation(ex) ResponseEntity
+    }
+
+    ProdutoController --> ProdutoService : usa
+    ProdutoController --> ProdutoModelAssembler : usa
+    ProdutoController ..> ProdutoRequest : recebe
+    ProdutoController ..> ProdutoPatchRequest : recebe
+    ProdutoService --> ProdutoRepository : usa
+    ProdutoService ..> Produto : constroi
+    ProdutoRepository ..> Produto : persiste
+    ProdutoModelAssembler ..> Produto : le
+    ProdutoModelAssembler ..> ProdutoResponse : produz
+    GlobalExceptionHandler ..> ProdutoController : intercepta
+```
+
+Os campos de `ProdutoRequest`, `ProdutoPatchRequest` e `ProdutoResponse` são iguais em nome, mas diferem no contrato: o request de criação exige todos preenchidos, o de PATCH aceita todos nulos, e só a resposta expõe o `id`.
 
 ### Entidade `Produto`
 
