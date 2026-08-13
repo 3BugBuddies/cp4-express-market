@@ -1,0 +1,25 @@
+CHECKPOINT 4 - PARTE I (API e Deploy)
+Java Advanced - Análise e Desenvolvimento de Sistemas (TDS) - FIAP
+Professor: Dr. Marcel Stefan Wagner
+
+
+EQUIPE BUGBUDDIES
+
+Felipe Yuiti Ishii        - RM: 565339
+Gabriel Nogueira Peixoto  - RM: 563925
+Giovanna Neri dos Santos  - RM: 566154
+Mariana Inoue             - RM: 565834
+
+
+REPOSITÓRIO GITHUB
+
+https://github.com/3BugBuddies/cp4-express-market.git
+
+O repositório contém o ReadMe com a descrição completa do projeto,
+incluindo imagens, diagramas e a explicação do CRUD com exemplos de
+requisição e resposta para cada endpoint.
+
+
+IDE UTILIZADA
+
+IntelliJ IDEA Ultimate 2026.2.1
