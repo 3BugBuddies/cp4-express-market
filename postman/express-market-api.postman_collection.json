@@ -1,0 +1,406 @@
+{
+  "info": {
+    "_postman_id": "b7c1f2ae-4d3a-4f1b-9c62-8ad2f0e51a44",
+    "name": "Express Market API — CP4 (Java Advanced)",
+    "description": "Coleção de testes do CRUD da Express Market API.\n\nA aplicação sobe em http://localhost:8082 e expõe o recurso /mercado.\n\nOs requests estão numerados e devem ser executados em ordem (Collection Runner): o POST guarda o id gerado na variável `produtoId`, que é reaproveitada pelos requests seguintes até o DELETE.\n\nEsta coleção também pode ser importada no Insomnia (Import > From File).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8082",
+      "type": "string"
+    },
+    {
+      "key": "produtoId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. POST — Criar produto",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201 Created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Header Location aponta para o recurso criado', function () {",
+              "    pm.expect(pm.response.headers.get('Location')).to.be.a('string');",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "",
+              "pm.test('Id foi gerado pela sequence', function () {",
+              "    pm.expect(body.id).to.be.a('number');",
+              "});",
+              "",
+              "pm.test('Campos enviados foram persistidos', function () {",
+              "    pm.expect(body.nome).to.eql('Detergente Neutro 500ml');",
+              "    pm.expect(body.setor).to.eql('Limpeza');",
+              "    pm.expect(body.preco).to.eql(3.49);",
+              "});",
+              "",
+              "pm.test('Resposta traz os links HATEOAS', function () {",
+              "    pm.expect(body._links).to.have.property('self');",
+              "    pm.expect(body._links).to.have.property('mercado');",
+              "    pm.expect(body._links).to.have.property('update');",
+              "    pm.expect(body._links).to.have.property('patch');",
+              "    pm.expect(body._links).to.have.property('delete');",
+              "});",
+              "",
+              "pm.collectionVariables.set('produtoId', body.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Detergente Neutro 500ml\",\n  \"tipo\": \"Produto de Limpeza\",\n  \"setor\": \"Limpeza\",\n  \"tamanho\": \"500ml\",\n  \"preco\": 3.49\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/mercado",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "mercado"
+          ]
+        },
+        "description": "Cadastra um produto na tabela TDS_TB_mercado. O id é gerado pela sequence SQ_TDS_TB_mercado e devolvido no corpo e no header Location."
+      },
+      "response": []
+    },
+    {
+      "name": "2. GET — Listar todos",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "",
+              "pm.test('Coleção vem embrulhada em _embedded', function () {",
+              "    pm.expect(body).to.have.property('_embedded');",
+              "});",
+              "",
+              "pm.test('Coleção tem link self', function () {",
+              "    pm.expect(body._links).to.have.property('self');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/mercado",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "mercado"
+          ]
+        },
+        "description": "Lista todos os produtos. Como é uma CollectionModel, os itens vêm dentro de _embedded e cada um preserva seus próprios links."
+      },
+      "response": []
+    },
+    {
+      "name": "3. GET — Buscar por ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Retornou o produto solicitado', function () {",
+              "    const esperado = Number(pm.collectionVariables.get('produtoId'));",
+              "    pm.expect(pm.response.json().id).to.eql(esperado);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/mercado/{{produtoId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "mercado",
+            "{{produtoId}}"
+          ]
+        },
+        "description": "Consulta a tabela TDS_TB_mercado pelo id e devolve o produto correspondente."
+      },
+      "response": []
+    },
+    {
+      "name": "4. PUT — Substituir",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "",
+              "pm.test('Todos os campos foram substituídos', function () {",
+              "    pm.expect(body.nome).to.eql('Detergente Neutro 1L');",
+              "    pm.expect(body.tamanho).to.eql('1L');",
+              "    pm.expect(body.preco).to.eql(5.99);",
+              "});",
+              "",
+              "pm.test('Id foi preservado', function () {",
+              "    pm.expect(body.id).to.eql(Number(pm.collectionVariables.get('produtoId')));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Detergente Neutro 1L\",\n  \"tipo\": \"Produto de Limpeza\",\n  \"setor\": \"Limpeza\",\n  \"tamanho\": \"1L\",\n  \"preco\": 5.99\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/mercado/{{produtoId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "mercado",
+            "{{produtoId}}"
+          ]
+        },
+        "description": "Substitui integralmente o produto. Todos os campos são obrigatórios. Em id inexistente devolve 404 — o PUT não cria registro novo."
+      },
+      "response": []
+    },
+    {
+      "name": "5. PATCH — Atualizar parcialmente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "",
+              "pm.test('Campo enviado foi atualizado', function () {",
+              "    pm.expect(body.preco).to.eql(4.79);",
+              "});",
+              "",
+              "pm.test('Campos ausentes mantiveram o valor anterior', function () {",
+              "    pm.expect(body.nome).to.eql('Detergente Neutro 1L');",
+              "    pm.expect(body.tamanho).to.eql('1L');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"preco\": 4.79\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/mercado/{{produtoId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "mercado",
+            "{{produtoId}}"
+          ]
+        },
+        "description": "Atualiza somente os campos enviados. É a diferença prática para o PUT: aqui os campos ausentes mantêm o valor já persistido."
+      },
+      "response": []
+    },
+    {
+      "name": "6. DELETE — Remover",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 204 No Content', function () {",
+              "    pm.response.to.have.status(204);",
+              "});",
+              "",
+              "pm.test('Resposta sem corpo', function () {",
+              "    pm.expect(pm.response.text()).to.be.empty;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/mercado/{{produtoId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "mercado",
+            "{{produtoId}}"
+          ]
+        },
+        "description": "Remove o produto do banco pelo id."
+      },
+      "response": []
+    },
+    {
+      "name": "7. POST — Corpo inválido (400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400 Bad Request', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "",
+              "pm.test('Erros vêm detalhados por campo', function () {",
+              "    pm.expect(body.errors).to.have.property('nome');",
+              "    pm.expect(body.errors).to.have.property('preco');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"AB\",\n  \"tipo\": \"Fruta\",\n  \"setor\": \"Hortifruti\",\n  \"tamanho\": \"1kg\",\n  \"preco\": -2.0\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/mercado",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "mercado"
+          ]
+        },
+        "description": "Nome com menos de 3 caracteres e preço negativo. O GlobalExceptionHandler traduz as violações em uma resposta 400 legível, em vez de stacktrace."
+      },
+      "response": []
+    },
+    {
+      "name": "8. GET — Produto inexistente (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 404 Not Found', function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/mercado/999999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "mercado",
+            "999999"
+          ]
+        },
+        "description": "Id que não existe na tabela. Confirma que o controller devolve 404 em vez de erro 500."
+      },
+      "response": []
+    }
+  ]
+}
