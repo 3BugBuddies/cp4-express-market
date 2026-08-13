@@ -2,8 +2,6 @@
 
 API REST desenvolvida com Spring Boot para gerenciamento do estoque de um mercado express, como parte do CheckPoint 4 — Parte I da disciplina de Java Advanced (TDS) — FIAP.
 
-A aplicação expõe um CRUD completo sobre a tabela `TDS_TB_mercado` do banco Oracle da FIAP, com respostas no padrão **HATEOAS** (nível 3 de maturidade de Richardson), validação de entrada, DTOs de request/response e CORS configurável.
-
 ---
 
 ## Integrantes do Grupo
@@ -35,6 +33,7 @@ A aplicação expõe um CRUD completo sobre a tabela `TDS_TB_mercado` do banco O
 | Lombok | Developer Tools | Redução de boilerplate (getters, setters, construtores) |
 | Oracle Driver | SQL | Driver JDBC para Oracle Database |
 | Spring Boot DevTools | Developer Tools | LiveReload e reinicialização automática |
+
 
 ---
 
@@ -69,37 +68,7 @@ src/
 
 ---
 
-## Decisões de Arquitetura
 
-### Por que Repository e não DAO?
-
-O Spring Data JPA já gerencia o `EntityManager` automaticamente — ciclo de vida, transações, thread-safety. O `JpaRepository` entrega o CRUD pronto via interface, sem precisar implementar nada na mão.
-
-DAO faria sentido se precisássemos de controle fino sobre o `EntityManager`. Aqui, o Spring cuida disso melhor do que faríamos manualmente.
-
-### Por que DTOs em vez de expor a entidade?
-
-A entidade é o formato do banco; o DTO é o contrato da API. Separar os dois traz três ganhos concretos:
-
-- **`ProdutoRequest` não tem `id`.** Na criação o id vem da sequence e na atualização vem da URL, então o cliente não consegue trocar a identidade do recurso mandando um id no corpo.
-- **`ProdutoPatchRequest` tem todos os campos opcionais.** É o que permite o PATCH parcial: campo nulo significa "não mexe", e as constraints `@Size`/`@Positive` ignoram nulos, validando só o que foi enviado.
-- **`ProdutoResponse` controla o que sai.** Se amanhã a entidade ganhar um campo interno, ele não vaza para a API sem alguém decidir isso.
-
-A conversão é feita de forma direta, sem camada de mapeamento intermediária: o `ProdutoService` monta a entidade a partir do request nas operações de escrita, e o `ProdutoModelAssembler` monta o `ProdutoResponse` a partir da entidade na leitura.
-
-### Por que não usar `@Data` na entidade?
-
-O `@Data` do Lombok gera `equals`/`hashCode` usando todos os campos. Em entidade JPA isso quebra: duas instâncias do mesmo registro deixam de ser iguais quando um campo muda, e o `hashCode` de uma entidade nova se altera depois que a sequence atribui o id — o que corrompe o comportamento dela dentro de coleções.
-
-Por isso a entidade usa `@Getter`, `@Setter`, `@NoArgsConstructor`, `@AllArgsConstructor` e `@Builder` de forma explícita, sem `@Data`.
-
-### HATEOAS — maturidade nível 3
-
-No nível 3 de Richardson a resposta não carrega só os dados: ela carrega também os links das ações possíveis sobre o recurso. O cliente navega pela API seguindo esses links, em vez de montar URLs na mão.
-
-O `ProdutoModelAssembler` monta, para cada produto, os links `self`, `mercado`, `update`, `patch` e `delete`. O POST ainda devolve o header `Location` apontando para o recurso criado.
-
----
 
 ## Como Executar
 
@@ -107,7 +76,7 @@ O `ProdutoModelAssembler` monta, para cada produto, os links `self`, `mercado`, 
 
 - Java 21+
 - Maven 3.9+
-- Acesso à rede da FIAP (VPN ou rede local) para conectar ao Oracle
+- Acesso à rede da FIAP (VPN ou rede local)
 
 ### Rodando a aplicação
 
@@ -125,7 +94,7 @@ cd cp4-express-market
 ./mvnw spring-boot:run
 ```
 
-A aplicação sobe em `http://localhost:8082`, conforme exigido pelo enunciado.
+A aplicação sobe em `http://localhost:8082`.
 
 ---
 
@@ -169,138 +138,8 @@ Métodos liberados: `GET`, `POST`, `PUT`, `PATCH`, `DELETE` e `OPTIONS`. O heade
 
 ## Modelo de Dados
 
-### Fluxo da Requisição
-
-```mermaid
-flowchart LR
-    Cliente["Postman / Insomnia"]
-    Controller["ProdutoController<br/>/mercado"]
-    Service["ProdutoService"]
-    Repository["ProdutoRepository<br/>Spring Data JPA"]
-    Assembler["ProdutoModelAssembler<br/>links HATEOAS"]
-    Oracle[("Oracle FIAP<br/>TDS_TB_mercado")]
-
-    Cliente -->|"HTTP + JSON"| Controller
-    Controller --> Service
-    Service --> Repository
-    Repository -->|"Hibernate / JDBC"| Oracle
-    Oracle -->|"resultado"| Repository
-    Controller --> Assembler
-    Assembler -->|"JSON + _links"| Cliente
-```
-
 ### Diagrama de Classe
 
-```mermaid
-classDiagram
-    direction TB
-
-    class ProdutoController {
-        <<RestController>>
-        -ProdutoService produtoService
-        -ProdutoModelAssembler assembler
-        +create(request) ResponseEntity
-        +findAll() ResponseEntity
-        +findById(id) ResponseEntity
-        +update(id, request) ResponseEntity
-        +patch(id, request) ResponseEntity
-        +delete(id) ResponseEntity
-    }
-
-    class ProdutoService {
-        <<Service>>
-        -ProdutoRepository produtoRepository
-        +save(request) Produto
-        +findAll() List~Produto~
-        +findById(id) Optional~Produto~
-        +update(id, request) Optional~Produto~
-        +patch(id, request) Optional~Produto~
-        +deleteById(id) boolean
-    }
-
-    class ProdutoRepository {
-        <<interface>>
-        +save(produto) Produto
-        +findAll() List~Produto~
-        +findById(id) Optional~Produto~
-        +delete(produto) void
-    }
-
-    class Produto {
-        <<Entity>>
-        -Long id
-        -String nome
-        -String tipo
-        -String setor
-        -String tamanho
-        -Double preco
-    }
-
-    class ProdutoRequest {
-        <<record>>
-        +String nome
-        +String tipo
-        +String setor
-        +String tamanho
-        +Double preco
-    }
-
-    class ProdutoPatchRequest {
-        <<record>>
-        +String nome
-        +String tipo
-        +String setor
-        +String tamanho
-        +Double preco
-    }
-
-    class ProdutoResponse {
-        <<record>>
-        +Long id
-        +String nome
-        +String tipo
-        +String setor
-        +String tamanho
-        +Double preco
-    }
-
-    class ProdutoModelAssembler {
-        <<Component>>
-        +toModel(produto) EntityModel
-    }
-
-    class GlobalExceptionHandler {
-        <<RestControllerAdvice>>
-        +handleBodyValidation(ex) ResponseEntity
-        +handleEntityValidation(ex) ResponseEntity
-    }
-
-    ProdutoController --> ProdutoService : usa
-    ProdutoController --> ProdutoModelAssembler : usa
-    ProdutoController ..> ProdutoRequest : recebe
-    ProdutoController ..> ProdutoPatchRequest : recebe
-    ProdutoService --> ProdutoRepository : usa
-    ProdutoService ..> Produto : constroi
-    ProdutoRepository ..> Produto : persiste
-    ProdutoModelAssembler ..> Produto : le
-    ProdutoModelAssembler ..> ProdutoResponse : produz
-    GlobalExceptionHandler ..> ProdutoController : intercepta
-```
-
-Os campos de `ProdutoRequest`, `ProdutoPatchRequest` e `ProdutoResponse` são iguais em nome, mas diferem no contrato: o request de criação exige todos preenchidos, o de PATCH aceita todos nulos, e só a resposta expõe o `id`.
-
-### Entidade `Produto`
-
-Tabela Oracle: `TDS_TB_mercado` | Sequence: `SQ_TDS_TB_mercado`
-
-| Campo | Coluna | Tipo | Validações |
-|-------|--------|------|-----------|
-| id | id_produto | Long (PK) | Gerado por sequence |
-| nome | nm_nome_produto | String | Obrigatório, 3–50 caracteres |
-| tipo | tp_tipo | String | Obrigatório, 3–50 caracteres |
-| setor | st_setor | String | Obrigatório, 3–50 caracteres |
-| tamanho | tm_tamanho | String | Obrigatório, 2–50 caracteres |
-| preco | pr_preco | Double | Obrigatório, valor positivo |
 
 ---
 
@@ -323,18 +162,13 @@ Requisição em recurso inexistente devolve `404 Not Found`; corpo inválido dev
 
 ## Documentação Interativa — Swagger UI
 
-Com a aplicação rodando, a documentação é gerada automaticamente pelo SpringDoc a partir dos controllers e dos DTOs:
+Documentação gerada automaticamente pelo SpringDoc a partir dos controllers e dos DTOs:
 
 | Recurso | URL |
 |---------|-----|
 | Swagger UI | http://localhost:8082/swagger-ui.html |
 | Especificação OpenAPI (JSON) | http://localhost:8082/v3/api-docs |
 
-A spec sai no formato **OpenAPI 3.1.0** e já descreve as 6 operações do recurso `/mercado`, incluindo os schemas `ProdutoRequest`, `ProdutoPatchRequest`, `EntityModelProdutoResponse` e `CollectionModelEntityModelProdutoResponse` — ou seja, o envelope HATEOAS aparece documentado junto com os dados.
-
-Pela Swagger UI dá para disparar as requisições direto do navegador, sem Postman, o que é útil para uma demonstração rápida.
-
-> A versão do SpringDoc está fixada em **3.0.2**, que é a linha compatível com Spring Boot 4.0.x. A partir do Boot 4.1 a compatibilidade muda, então subir a versão do Boot exige subir o SpringDoc junto.
 
 ---
 
@@ -353,7 +187,6 @@ postman/express-market-api.postman_collection.json
 **Postman:** `Import` → selecione o arquivo → rode com o **Collection Runner**.
 **Insomnia:** `Import` → `From File` → selecione o mesmo arquivo.
 
-Os requests estão numerados e devem rodar em ordem: o POST guarda o id gerado na variável `produtoId`, que os requests seguintes reaproveitam até o DELETE. A variável `baseUrl` já aponta para `http://localhost:8082` e pode ser trocada pela URL do deploy.
 
 | # | Cenário | Esperado |
 |---|---------|----------|
