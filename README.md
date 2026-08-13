@@ -29,6 +29,7 @@ A aplicação expõe um CRUD completo sobre a tabela `TDS_TB_mercado` do banco O
 |-------------|-----------|-----------|
 | Spring Web | WEB | Criação de APIs REST com Spring MVC |
 | Spring HATEOAS | WEB | Links de navegação nas respostas (maturidade nível 3) |
+| SpringDoc OpenAPI | WEB | Documentação interativa da API via Swagger UI |
 | Spring Data JPA | SQL | Persistência com JPA e Hibernate |
 | Validation | I/O | Bean Validation com Hibernate Validator |
 | Lombok | Developer Tools | Redução de boilerplate (getters, setters, construtores) |
@@ -320,6 +321,23 @@ Requisição em recurso inexistente devolve `404 Not Found`; corpo inválido dev
 
 ---
 
+## Documentação Interativa — Swagger UI
+
+Com a aplicação rodando, a documentação é gerada automaticamente pelo SpringDoc a partir dos controllers e dos DTOs:
+
+| Recurso | URL |
+|---------|-----|
+| Swagger UI | http://localhost:8082/swagger-ui.html |
+| Especificação OpenAPI (JSON) | http://localhost:8082/v3/api-docs |
+
+A spec sai no formato **OpenAPI 3.1.0** e já descreve as 6 operações do recurso `/mercado`, incluindo os schemas `ProdutoRequest`, `ProdutoPatchRequest`, `EntityModelProdutoResponse` e `CollectionModelEntityModelProdutoResponse` — ou seja, o envelope HATEOAS aparece documentado junto com os dados.
+
+Pela Swagger UI dá para disparar as requisições direto do navegador, sem Postman, o que é útil para uma demonstração rápida.
+
+> A versão do SpringDoc está fixada em **3.0.2**, que é a linha compatível com Spring Boot 4.0.x. A partir do Boot 4.1 a compatibilidade muda, então subir a versão do Boot exige subir o SpringDoc junto.
+
+---
+
 ## Testes
 
 Todos os testes abaixo foram executados contra `http://localhost:8082`.
@@ -368,19 +386,19 @@ Cadastra um novo produto na tabela `TDS_TB_mercado` e retorna o objeto criado co
 
 ```json
 {
-  "id": 1,
-  "nome": "Detergente Neutro 500ml",
-  "tipo": "Produto de Limpeza",
-  "setor": "Limpeza",
-  "tamanho": "500ml",
-  "preco": 3.49,
   "_links": {
     "self":    { "href": "http://localhost:8082/mercado/1" },
     "mercado": { "href": "http://localhost:8082/mercado" },
     "update":  { "href": "http://localhost:8082/mercado/1" },
     "patch":   { "href": "http://localhost:8082/mercado/1" },
     "delete":  { "href": "http://localhost:8082/mercado/1" }
-  }
+  },
+  "id": 1,
+  "nome": "Detergente Neutro 500ml",
+  "tipo": "Produto de Limpeza",
+  "setor": "Limpeza",
+  "tamanho": "500ml",
+  "preco": 3.49
 }
 ```
 
@@ -402,19 +420,19 @@ Retorna todos os produtos cadastrados. A coleção vem em `_embedded`, com os li
   "_embedded": {
     "produtoResponseList": [
       {
-        "id": 1,
-        "nome": "Detergente Neutro 500ml",
-        "tipo": "Produto de Limpeza",
-        "setor": "Limpeza",
-        "tamanho": "500ml",
-        "preco": 3.49,
         "_links": {
           "self":    { "href": "http://localhost:8082/mercado/1" },
           "mercado": { "href": "http://localhost:8082/mercado" },
           "update":  { "href": "http://localhost:8082/mercado/1" },
           "patch":   { "href": "http://localhost:8082/mercado/1" },
           "delete":  { "href": "http://localhost:8082/mercado/1" }
-        }
+        },
+        "id": 1,
+        "nome": "Detergente Neutro 500ml",
+        "tipo": "Produto de Limpeza",
+        "setor": "Limpeza",
+        "tamanho": "500ml",
+        "preco": 3.49
       }
     ]
   },
@@ -531,10 +549,11 @@ Corpo inválido é traduzido pelo `GlobalExceptionHandler` em uma resposta legí
 ## Tecnologias Utilizadas
 
 - **Java 21**
-- **Spring Boot 4.1.0**
+- **Spring Boot 4.0.7**
 - **Spring Data JPA + Hibernate**
 - **Spring Web (MVC)**
 - **Spring HATEOAS**
+- **SpringDoc OpenAPI 3.0.2 (Swagger UI)**
 - **Bean Validation (Hibernate Validator)**
 - **Lombok**
 - **Oracle Database (OJDBC 11)**
