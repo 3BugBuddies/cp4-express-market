@@ -1,6 +1,8 @@
 package com.br.fiap.express_market.api.controller;
 
-import com.br.fiap.express_market.api.entity.Produto;
+import com.br.fiap.express_market.api.dto.ProdutoPatchRequest;
+import com.br.fiap.express_market.api.dto.ProdutoRequest;
+import com.br.fiap.express_market.api.dto.ProdutoResponse;
 import com.br.fiap.express_market.api.hateoas.ProdutoModelAssembler;
 import com.br.fiap.express_market.api.service.ProdutoService;
 import jakarta.validation.Valid;
@@ -25,16 +27,16 @@ public class ProdutoController {
     private final ProdutoModelAssembler assembler;
 
     @PostMapping
-    public ResponseEntity<EntityModel<Produto>> create(@RequestBody @Valid Produto produto) {
-        EntityModel<Produto> produtoCriado = assembler.toModel(produtoService.save(produto));
+    public ResponseEntity<EntityModel<ProdutoResponse>> create(@RequestBody @Valid ProdutoRequest request) {
+        EntityModel<ProdutoResponse> produtoCriado = assembler.toModel(produtoService.save(request));
         return ResponseEntity
                 .created(produtoCriado.getRequiredLink(IanaLinkRelations.SELF).toUri())
                 .body(produtoCriado);
     }
 
     @GetMapping
-    public ResponseEntity<CollectionModel<EntityModel<Produto>>> findAll() {
-        List<EntityModel<Produto>> produtos = produtoService.findAll()
+    public ResponseEntity<CollectionModel<EntityModel<ProdutoResponse>>> findAll() {
+        List<EntityModel<ProdutoResponse>> produtos = produtoService.findAll()
                 .stream()
                 .map(assembler::toModel)
                 .toList();
@@ -44,7 +46,7 @@ public class ProdutoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EntityModel<Produto>> findById(@PathVariable Long id) {
+    public ResponseEntity<EntityModel<ProdutoResponse>> findById(@PathVariable Long id) {
         return produtoService.findById(id)
                 .map(assembler::toModel)
                 .map(ResponseEntity::ok)
@@ -52,16 +54,18 @@ public class ProdutoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EntityModel<Produto>> update(@PathVariable Long id, @RequestBody @Valid Produto produto) {
-        return produtoService.update(id, produto)
+    public ResponseEntity<EntityModel<ProdutoResponse>> update(@PathVariable Long id,
+                                                               @RequestBody @Valid ProdutoRequest request) {
+        return produtoService.update(id, request)
                 .map(assembler::toModel)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<EntityModel<Produto>> patch(@PathVariable Long id, @RequestBody Produto produto) {
-        return produtoService.patch(id, produto)
+    public ResponseEntity<EntityModel<ProdutoResponse>> patch(@PathVariable Long id,
+                                                              @RequestBody @Valid ProdutoPatchRequest request) {
+        return produtoService.patch(id, request)
                 .map(assembler::toModel)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

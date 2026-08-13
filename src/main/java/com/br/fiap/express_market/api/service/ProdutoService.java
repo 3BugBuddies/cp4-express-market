@@ -1,5 +1,7 @@
 package com.br.fiap.express_market.api.service;
 
+import com.br.fiap.express_market.api.dto.ProdutoPatchRequest;
+import com.br.fiap.express_market.api.dto.ProdutoRequest;
 import com.br.fiap.express_market.api.entity.Produto;
 import com.br.fiap.express_market.api.repository.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +16,15 @@ public class ProdutoService {
 
     private final ProdutoRepository produtoRepository;
 
-    public Produto save(Produto produto) {
+    public Produto save(ProdutoRequest request) {
+        Produto produto = Produto.builder()
+                .nome(request.nome())
+                .tipo(request.tipo())
+                .setor(request.setor())
+                .tamanho(request.tamanho())
+                .preco(request.preco())
+                .build();
+
         return produtoRepository.save(produto);
     }
 
@@ -30,10 +40,14 @@ public class ProdutoService {
      * PUT — substitui integralmente o produto. Retorna Optional.empty() se o id não existir,
      * evitando que um PUT em id inexistente acabe criando um registro novo.
      */
-    public Optional<Produto> update(Long id, Produto produto) {
+    public Optional<Produto> update(Long id, ProdutoRequest request) {
         return produtoRepository.findById(id).map(produtoExistente -> {
-            produto.setId(id);
-            return produtoRepository.save(produto);
+            produtoExistente.setNome(request.nome());
+            produtoExistente.setTipo(request.tipo());
+            produtoExistente.setSetor(request.setor());
+            produtoExistente.setTamanho(request.tamanho());
+            produtoExistente.setPreco(request.preco());
+            return produtoRepository.save(produtoExistente);
         });
     }
 
@@ -41,22 +55,22 @@ public class ProdutoService {
      * PATCH — atualiza somente os campos enviados no corpo da requisição.
      * Os campos nulos do JSON são ignorados e mantêm o valor já persistido.
      */
-    public Optional<Produto> patch(Long id, Produto produtoParcial) {
+    public Optional<Produto> patch(Long id, ProdutoPatchRequest request) {
         return produtoRepository.findById(id).map(produtoExistente -> {
-            if (produtoParcial.getNome() != null) {
-                produtoExistente.setNome(produtoParcial.getNome());
+            if (request.nome() != null) {
+                produtoExistente.setNome(request.nome());
             }
-            if (produtoParcial.getTipo() != null) {
-                produtoExistente.setTipo(produtoParcial.getTipo());
+            if (request.tipo() != null) {
+                produtoExistente.setTipo(request.tipo());
             }
-            if (produtoParcial.getSetor() != null) {
-                produtoExistente.setSetor(produtoParcial.getSetor());
+            if (request.setor() != null) {
+                produtoExistente.setSetor(request.setor());
             }
-            if (produtoParcial.getTamanho() != null) {
-                produtoExistente.setTamanho(produtoParcial.getTamanho());
+            if (request.tamanho() != null) {
+                produtoExistente.setTamanho(request.tamanho());
             }
-            if (produtoParcial.getPreco() != null) {
-                produtoExistente.setPreco(produtoParcial.getPreco());
+            if (request.preco() != null) {
+                produtoExistente.setPreco(request.preco());
             }
             return produtoRepository.save(produtoExistente);
         });
