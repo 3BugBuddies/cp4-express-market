@@ -10,3 +10,7 @@ Mariana Inoue             - RM: 565834
 
 REPOSITÓRIO GITHUB:
 https://github.com/3BugBuddies/cp4-express-market.git
+
+
+IDE UTILIZADA:
+IntelliJ IDEA

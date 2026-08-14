@@ -42,26 +42,30 @@ API REST desenvolvida com Spring Boot para gerenciamento do estoque de um mercad
 ```
 src/
 └── main/
-    ├── java/com/br/fiap/express_market/api/
+    ├── java/com/br/fiap/expressmarket/api/
     │   ├── ExpressMarketApiApplication.java   # Classe principal
+    │   ├── assembler/
+    │   │   └── ProdutoModelAssembler.java     # Montagem dos links HATEOAS
     │   ├── config/
-    │   │   └── CorsConfig.java               # Liberação de origens (CORS)
+    │   │   ├── CorsConfig.java                # Liberação de origens (CORS)
+    │   │   └── OpenApiConfig.java             # Metadados da Swagger UI
     │   ├── controller/
-    │   │   └── ProdutoController.java        # Endpoints REST
+    │   │   └── ProdutoController.java         # Endpoints REST
     │   ├── dto/
-    │   │   ├── ProdutoRequest.java           # Corpo do POST e do PUT
-    │   │   ├── ProdutoPatchRequest.java      # Corpo do PATCH (campos opcionais)
-    │   │   └── ProdutoResponse.java          # Representação devolvida pela API
+    │   │   ├── ProdutoRequest.java            # Corpo do POST e do PUT
+    │   │   ├── ProdutoPatchRequest.java       # Corpo do PATCH (campos opcionais)
+    │   │   └── ProdutoResponse.java           # Representação devolvida pela API
     │   ├── entity/
-    │   │   └── Produto.java                  # Entidade JPA
+    │   │   └── Produto.java                   # Entidade JPA
     │   ├── exception/
-    │   │   └── GlobalExceptionHandler.java   # Tradução de erros de validação
-    │   ├── hateoas/
-    │   │   └── ProdutoModelAssembler.java    # Montagem dos links HATEOAS
+    │   │   └── NotFoundException.java         # Recurso inexistente
+    │   ├── handler/
+    │   │   ├── GlobalExceptionHandler.java    # Traduz exceções em respostas HTTP
+    │   │   └── ErrorResponse.java             # Corpo das respostas de erro
     │   ├── repository/
-    │   │   └── ProdutoRepository.java        # Interface de acesso a dados
+    │   │   └── ProdutoRepository.java         # Interface de acesso a dados
     │   └── service/
-    │       └── ProdutoService.java           # Regras de negócio
+    │       └── ProdutoService.java            # Regras de negócio
     └── resources/
         └── application.properties            # Configurações da aplicação
 ```
@@ -363,10 +367,32 @@ Corpo inválido é traduzido pelo `GlobalExceptionHandler` em uma resposta legí
   "timestamp": "2026-08-13T22:10:31.482Z",
   "status": 400,
   "error": "Bad Request",
+  "message": "Falha de validação nos campos enviados.",
+  "path": "/mercado",
   "errors": {
     "nome": "O nome deve ter entre 3 e 50 caracteres",
     "preco": "O preço deve ser um valor positivo"
   }
+}
+```
+
+---
+
+### Recurso inexistente
+
+Qualquer operação sobre um id que não existe devolve `404` no mesmo formato. O campo `errors` só aparece em falhas de validação, então aqui ele é omitido.
+
+**Requisição** — `GET /mercado/999999`
+
+**Resposta** — `404 Not Found`
+
+```json
+{
+  "timestamp": "2026-08-13T22:11:04.118Z",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Produto não encontrado(a): id 999999",
+  "path": "/mercado/999999"
 }
 ```
 
