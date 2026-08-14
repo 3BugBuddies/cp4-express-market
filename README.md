@@ -4,6 +4,19 @@ API REST desenvolvida com Spring Boot para gerenciamento do estoque de um mercad
 
 ---
 
+## Deploy
+
+| Recurso         | URL |
+|-----------------|-----|
+| Deploy (Render) | https://cp4-express-market.onrender.com/ |
+| Swagger UI      | https://cp4-express-market.onrender.com/swagger-ui/index.html |
+
+
+> ![Deploy Render](./assets/Deploy.png)
+
+---
+
+
 ## Integrantes do Grupo
 
 | Nome | RM |
@@ -34,8 +47,9 @@ API REST desenvolvida com Spring Boot para gerenciamento do estoque de um mercad
 | Oracle Driver | SQL | Driver JDBC para Oracle Database |
 | Spring Boot DevTools | Developer Tools | LiveReload e reinicialização automática |
 
-
 ---
+
+
 
 ## Estrutura do Projeto
 
@@ -72,7 +86,13 @@ src/
 
 ---
 
+## Por que Repository e não DAO?
 
+O Spring Data JPA já gerencia o `EntityManager` automaticamente — ciclo de vida, transações, thread-safety. O `JpaRepository` entrega o CRUD pronto via interface, sem precisar implementar nada na mão.
+
+DAO faria sentido se precisássemos de controle fino sobre o `EntityManager`. Aqui, o Spring cuida disso melhor do que faríamos manualmente.
+
+---
 
 ## Como Executar
 
@@ -102,6 +122,24 @@ A aplicação sobe em `http://localhost:8082`.
 
 ---
 
+## Configuração de CORS
+
+O `CorsConfig` libera o consumo da API por front-ends hospedados em outra origem. As origens permitidas vêm de uma propriedade, o que permite abrir em desenvolvimento e restringir no deploy sem recompilar:
+
+```properties
+# Todas as origens (desenvolvimento)
+cors.allowed-origins=*
+
+# Origens específicas (produção)
+cors.allowed-origins=https://meu-front.com,https://admin.meu-front.com
+```
+
+Métodos liberados: `GET`, `POST`, `PUT`, `PATCH`, `DELETE` e `OPTIONS`. O header `Location` é exposto explicitamente, senão o browser não conseguiria ler a URL do recurso criado pelo POST.
+
+
+
+---
+
 ## Configuração do Banco de Dados
 
 Banco Oracle disponibilizado pela FIAP. Configure `src/main/resources/application.properties` com suas credenciais:
@@ -119,24 +157,7 @@ spring.jpa.properties.hibernate.format_sql=true
 
 ### Print do Banco de Dados
 
-<!-- TODO: substituir pelo print do SQL Developer com a TDS_TB_mercado populada -->
-> ⏳ _Print do SQL Developer pendente._
-
----
-
-## Configuração de CORS
-
-O `CorsConfig` libera o consumo da API por front-ends hospedados em outra origem. As origens permitidas vêm de uma propriedade, o que permite abrir em desenvolvimento e restringir no deploy sem recompilar:
-
-```properties
-# Todas as origens (desenvolvimento)
-cors.allowed-origins=*
-
-# Origens específicas (produção)
-cors.allowed-origins=https://meu-front.com,https://admin.meu-front.com
-```
-
-Métodos liberados: `GET`, `POST`, `PUT`, `PATCH`, `DELETE` e `OPTIONS`. O header `Location` é exposto explicitamente, senão o browser não conseguiria ler a URL do recurso criado pelo POST.
+> ![Colunas Banco](./assets/Banco.png)
 
 ---
 
@@ -150,7 +171,7 @@ Métodos liberados: `GET`, `POST`, `PUT`, `PATCH`, `DELETE` e `OPTIONS`. O heade
 
 ## Endpoints da API
 
-Base URL: `http://localhost:8082/mercado`
+Base URL: `https://cp4-express-market.onrender.com/mercado`
 
 | Método | Rota | Descrição | Status de Sucesso |
 |--------|------|-----------|-------------------|
@@ -162,18 +183,6 @@ Base URL: `http://localhost:8082/mercado`
 | `DELETE` | `/mercado/{id}` | Remover produto | `204 No Content` |
 
 Requisição em recurso inexistente devolve `404 Not Found`; corpo inválido devolve `400 Bad Request` com a lista de campos rejeitados.
-
----
-
-## Documentação Interativa — Swagger UI
-
-Documentação gerada automaticamente pelo SpringDoc a partir dos controllers e dos DTOs:
-
-| Recurso | URL |
-|---------|-----|
-| Swagger UI | http://localhost:8082/swagger-ui.html |
-| Especificação OpenAPI (JSON) | http://localhost:8082/v3/api-docs |
-
 
 ---
 
@@ -225,13 +234,13 @@ Cadastra um novo produto na tabela `TDS_TB_mercado` e retorna o objeto criado co
 ```json
 {
   "_links": {
-    "self":    { "href": "http://localhost:8082/mercado/1" },
+    "self":    { "href": "http://localhost:8082/mercado/2" },
     "mercado": { "href": "http://localhost:8082/mercado" },
-    "update":  { "href": "http://localhost:8082/mercado/1" },
-    "patch":   { "href": "http://localhost:8082/mercado/1" },
-    "delete":  { "href": "http://localhost:8082/mercado/1" }
+    "update":  { "href": "http://localhost:8082/mercado/2" },
+    "patch":   { "href": "http://localhost:8082/mercado/2" },
+    "delete":  { "href": "http://localhost:8082/mercado/2" }
   },
-  "id": 1,
+  "id": 2,
   "nome": "Detergente Neutro 500ml",
   "tipo": "Produto de Limpeza",
   "setor": "Limpeza",
@@ -240,8 +249,7 @@ Cadastra um novo produto na tabela `TDS_TB_mercado` e retorna o objeto criado co
 }
 ```
 
-<!-- TODO: print do POST no Insomnia -->
-> ⏳ _Print pendente._
+> ![Test Post](./assets/Post.png)
 
 ---
 
@@ -259,13 +267,13 @@ Retorna todos os produtos cadastrados. A coleção vem em `_embedded`, com os li
     "produtoResponseList": [
       {
         "_links": {
-          "self":    { "href": "http://localhost:8082/mercado/1" },
+          "self":    { "href": "http://localhost:8082/mercado/2" },
           "mercado": { "href": "http://localhost:8082/mercado" },
-          "update":  { "href": "http://localhost:8082/mercado/1" },
-          "patch":   { "href": "http://localhost:8082/mercado/1" },
-          "delete":  { "href": "http://localhost:8082/mercado/1" }
+          "update":  { "href": "http://localhost:8082/mercado/2" },
+          "patch":   { "href": "http://localhost:8082/mercado/2" },
+          "delete":  { "href": "http://localhost:8082/mercado/2" }
         },
-        "id": 1,
+        "id": 2,
         "nome": "Detergente Neutro 500ml",
         "tipo": "Produto de Limpeza",
         "setor": "Limpeza",
@@ -280,8 +288,7 @@ Retorna todos os produtos cadastrados. A coleção vem em `_embedded`, com os li
 }
 ```
 
-<!-- TODO: print do GET all no Insomnia -->
-> ⏳ _Print pendente._
+> ![Test GetAll](./assets/GetAll.png)
 
 ---
 
@@ -289,10 +296,9 @@ Retorna todos os produtos cadastrados. A coleção vem em `_embedded`, com os li
 
 Retorna um produto específico. Devolve `404` se o ID não existir.
 
-**Requisição** — `GET /mercado/1`
+**Requisição** — `GET /mercado/2`
 
-<!-- TODO: print do GET por id no Insomnia -->
-> ⏳ _Print pendente._
+> ![Test GetById](./assets/GetById.png)
 
 ---
 
@@ -300,7 +306,7 @@ Retorna um produto específico. Devolve `404` se o ID não existir.
 
 Substitui **todos** os campos do produto. Todos os campos são obrigatórios no corpo. Se o ID não existir, devolve `404` — o PUT não cria registro novo.
 
-**Requisição** — `PUT /mercado/1`
+**Requisição** — `PUT /mercado/2`
 
 ```json
 {
@@ -312,8 +318,7 @@ Substitui **todos** os campos do produto. Todos os campos são obrigatórios no 
 }
 ```
 
-<!-- TODO: print do PUT no Insomnia -->
-> ⏳ _Print pendente._
+> ![Test Put](./assets/Put.png)
 
 ---
 
@@ -321,7 +326,7 @@ Substitui **todos** os campos do produto. Todos os campos são obrigatórios no 
 
 Atualiza **somente** os campos enviados. Os campos ausentes mantêm o valor já persistido — é a diferença prática para o PUT.
 
-**Requisição** — `PATCH /mercado/1`
+**Requisição** — `PATCH /mercado/2`
 
 ```json
 {
@@ -329,8 +334,7 @@ Atualiza **somente** os campos enviados. Os campos ausentes mantêm o valor já 
 }
 ```
 
-<!-- TODO: print do PATCH no Insomnia -->
-> ⏳ _Print pendente._
+> ![Test Patch](./assets/Patch.png)
 
 ---
 
@@ -338,10 +342,9 @@ Atualiza **somente** os campos enviados. Os campos ausentes mantêm o valor já 
 
 Remove o produto do banco pelo ID. Devolve `204 No Content` em caso de sucesso ou `404` se o ID não existir.
 
-**Requisição** — `DELETE /mercado/1`
+**Requisição** — `DELETE /mercado/2`
 
-<!-- TODO: print do DELETE no Insomnia -->
-> ⏳ _Print pendente._
+> ![Test Delete](./assets/Delete.png)
 
 ---
 
@@ -377,6 +380,8 @@ Corpo inválido é traduzido pelo `GlobalExceptionHandler` em uma resposta legí
 }
 ```
 
+> ![Test Post Error](./assets/PostError.png)
+
 ---
 
 ### Recurso inexistente
@@ -396,14 +401,7 @@ Qualquer operação sobre um id que não existe devolve `404` no mesmo formato. 
   "path": "/mercado/999999"
 }
 ```
-
----
-
-## Deploy
-
-<!-- TODO: plataforma, link público e instruções de Docker -->
-> ⏳ _Deploy pendente._
-
+> ![Test GetError](./assets/GetByIdError.png)
 ---
 
 ## Tecnologias Utilizadas
