@@ -1,4 +1,4 @@
-package com.br.fiap.express_market.api;
+package com.br.fiap.expressmarket.api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

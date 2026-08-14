@@ -1,8 +1,8 @@
-package com.br.fiap.express_market.api.hateoas;
+package com.br.fiap.expressmarket.api.assembler;
 
-import com.br.fiap.express_market.api.controller.ProdutoController;
-import com.br.fiap.express_market.api.dto.ProdutoResponse;
-import com.br.fiap.express_market.api.entity.Produto;
+import com.br.fiap.expressmarket.api.controller.ProdutoController;
+import com.br.fiap.expressmarket.api.dto.ProdutoResponse;
+import com.br.fiap.expressmarket.api.entity.Produto;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
@@ -10,11 +10,6 @@ import org.springframework.stereotype.Component;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-/**
- * Converte a entidade em ProdutoResponse e acopla os links de navegação
- * (nível 3 de maturidade de Richardson): a resposta carrega as ações possíveis
- * sobre o recurso, de modo que o cliente não precise montar URLs na mão.
- */
 @Component
 public class ProdutoModelAssembler implements RepresentationModelAssembler<Produto, EntityModel<ProdutoResponse>> {
 

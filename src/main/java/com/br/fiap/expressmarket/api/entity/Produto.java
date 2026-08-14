@@ -1,4 +1,4 @@
-package com.br.fiap.express_market.api.entity;
+package com.br.fiap.expressmarket.api.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

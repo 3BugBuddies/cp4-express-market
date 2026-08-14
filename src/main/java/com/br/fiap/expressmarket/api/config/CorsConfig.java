@@ -1,4 +1,4 @@
-package com.br.fiap.express_market.api.config;
+package com.br.fiap.expressmarket.api.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -6,11 +6,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * Libera o consumo da API a partir de front-ends hospedados em outra origem.
- * As origens permitidas ficam na propriedade cors.allowed-origins, então dá para
- * abrir em desenvolvimento e restringir no deploy sem recompilar.
- */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
