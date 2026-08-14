@@ -144,6 +144,7 @@ Métodos liberados: `GET`, `POST`, `PUT`, `PATCH`, `DELETE` e `OPTIONS`. O heade
 
 ### Diagrama de Classe
 
+![Diagrama Classe](./assets/diagrama.png)
 
 ---
 
