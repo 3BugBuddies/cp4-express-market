@@ -100,7 +100,6 @@ DAO faria sentido se precisássemos de controle fino sobre o `EntityManager`. Aq
 
 - Java 21+
 - Maven 3.9+
-- Acesso à rede da FIAP (VPN ou rede local)
 
 ### Rodando a aplicação
 
